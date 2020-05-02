@@ -1,0 +1,8 @@
+# Chess Conducto Pipeline
+A pipeline that'll cobble together some data about my lichess games.
+
+## Python venv
+I use the venv python module to make venvs. On ubuntu there are sometimes
+weird issues where python complains that the `ensurepip` library is missing.
+You can run `apt install python3.7-venv` to install that missing lib.
+
