@@ -20,13 +20,25 @@ def env_vars() -> conducto.Exec:
 
 def download_games() -> conducto.Exec:
     """Executor to Download lichess games."""
-    cmd = f'python3.7 scripts/download_lichess_data --player-name={PLAYER_NAME} --output-file={GAMES_DATA_FILE}'
+    args = [
+        'python3.7',
+        'scripts/download_lichess_data.py',
+        f'--player-name={PLAYER_NAME}',
+        f'--output-file={GAMES_DATA_FILE}',
+    ]
+    cmd = ' '.join(args)
     return conducto.Exec(cmd, name='download-from-lichess')
 
 
 def openings_win_loss_rate() -> conducto.Exec:
     """Executor to analyze openings from lichess data."""
-    cmd = f'python3.7 scripts/openings_win_rate.py --input-file={GAMES_DATA_FILE} --player-name={PLAYER_NAME}'
+    args = [
+        'python3.7',
+        'scripts/openings_win_rate.py',
+        f'--input-file={GAMES_DATA_FILE}',
+        f'--player-name={PLAYER_NAME}',
+    ]
+    cmd = ' '.join(args)
     return conducto.Exec(cmd, name='openings_win_loss_rate')
 
 
