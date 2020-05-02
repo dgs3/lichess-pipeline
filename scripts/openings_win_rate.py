@@ -58,24 +58,16 @@ def game_is_timeout(game_dict) -> bool:
 
 def opening_table_to_markdown(game_data) -> str:
     """Format an opening table to markdown."""
-    markdown = "<ConductoMarkdown>"
-    markdown += "<table><thead><tr>"
-    markdown += "<th>Opening Name</th>"
-    markdown += "<th>Wins</th>"
-    markdown += "<th>Losses</th>"
-    markdown += "<th>Draws</th>"
-    markdown += "</tr></thead>"
-    markdown += "<tbody>"
+    to_return = ""
     for opening_name, data in game_data.items():
-        markdown += "<tr>"
-        markdown += f"<td>{opening_name}</td>"
-        markdown += f"<td>{data[Result.WIN]}</td>"
-        markdown += f"<td>{data[Result.LOSS]}</td>"
-        markdown += f"<td>{data[Result.DRAW]}</td>"
-    markdown += "</tbody>"
-    markdown += "/table"
-    markdown += "</ConductoMarkdown>"
-    return markdown
+        to_add = [f'{opening_name}:',
+                  f'Wins: {data[Result.WIN]}',
+                  f'Losses: {data[Result.LOSS]}',
+                  f'Draws: {data[Result.DRAW]}',
+        ]
+        to_return += ' '.join(to_add)
+        to_return += '\n'
+    return to_return
 
 
 def analyze_games(game_data, player) -> str:
