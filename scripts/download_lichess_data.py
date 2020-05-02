@@ -10,7 +10,7 @@ import json
 
 import berserk
 
-def parse_args():
+def parse_args() -> argparse.Namespace:
     """Parse some args.
 
     :returns: args domain object.
@@ -31,19 +31,20 @@ class LichessEncoder(json.JSONEncoder):
     serialize them as timestamps.
     """
 
-    def default(self, obj):
+    # Unfortunately super().default uses `o`, and not something more
+    # comprehensible like `obj`. Not using `o` gives pylint errors. :(
+    def default(self, o) -> str:
         """Default Encoder function.
 
         :param obj: Object to encode.
         :returns: JSON encoded object.
         """
-        if isinstance(obj, datetime.datetime):
-            return self.serialize_datetime_obj(obj)
-        else:
-            return json.JSONEncoder.default(self, obj)
+        if isinstance(o, datetime.datetime):
+            return self.serialize_datetime_obj(o)
+        return super().default(o)
 
     @staticmethod
-    def serialize_datetime_obj(obj):
+    def serialize_datetime_obj(obj) -> str:
         """Serialize a datetime object for json.
 
         Here a serialized datetime object is just the isoformat string.
