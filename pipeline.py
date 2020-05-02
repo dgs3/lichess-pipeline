@@ -14,4 +14,4 @@ def hello() -> conducto.Exec:
 
 
 if __name__ == "__main__":
-    conducto.main()
+    conducto.main(default=hello)
