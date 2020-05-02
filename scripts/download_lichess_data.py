@@ -6,20 +6,21 @@ Script used to download lichess game data.
 import argparse
 import datetime
 import json
+import os
 
 import berserk
 
 
 def parse_args() -> argparse.Namespace:
-    """Parse some args.
-
-    :returns: args domain object.
-    """
+    """Parse some args."""
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--player-name',
-                        help='Lichess player name to analyze.')
+                        help='Lichess player name to analyze.',
+                        required=True)
     parser.add_argument('--token', help='Lichess API token.')
-    parser.add_argument('--output-file', help='File to output game data to.')
+    parser.add_argument('--output-file',
+                        help='File to output game data to.',
+                        required=True)
     return parser.parse_args()
 
 
@@ -51,16 +52,26 @@ class LichessEncoder(json.JSONEncoder):
         return obj.isoformat()
 
 
+def get_token_from_env() -> str:
+    """Gets a lichess token from the env."""
+    return os.environ['LICHESS_TOKEN']
+
+
 def main():
     """Main method."""
     args = parse_args()
-    session = berserk.TokenSession(args.token)
+    token = args.token
+    # Having the token in the env supports conducto a bit better.
+    if args.token is None:
+        token = get_token_from_env()
+    session = berserk.TokenSession(token)
     client = berserk.Client(session=session)
     games = client.games.export_by_player(args.player_name)
-    # Games comes in as a generator
-    games_list = list(games)
+    full_game_data = []
+    for game in games:
+        full_game_data.append(client.games.export(game['id']))
     with open(args.output_file, 'w') as fil:
-        json.dump(games_list, fil, cls=LichessEncoder)
+        json.dump(full_game_data, fil, cls=LichessEncoder)
 
 
 if __name__ == "__main__":
