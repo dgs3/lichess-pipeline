@@ -1,5 +1,4 @@
 #!/usr/bin/env python3.7
-
 """
 Script used to download lichess game data.
 """
@@ -10,6 +9,7 @@ import json
 
 import berserk
 
+
 def parse_args() -> argparse.Namespace:
     """Parse some args.
 
@@ -18,11 +18,10 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--player-name',
                         help='Lichess player name to analyze.')
-    parser.add_argument('--token',
-                        help='Lichess API token.')
-    parser.add_argument('--output-file',
-                        help='File to output game data to.')
+    parser.add_argument('--token', help='Lichess API token.')
+    parser.add_argument('--output-file', help='File to output game data to.')
     return parser.parse_args()
+
 
 class LichessEncoder(json.JSONEncoder):
     """A decoder for lichess game data.
@@ -51,6 +50,7 @@ class LichessEncoder(json.JSONEncoder):
         """
         return obj.isoformat()
 
+
 def main():
     """Main method."""
     args = parse_args()
@@ -61,6 +61,7 @@ def main():
     games_list = list(games)
     with open(args.output_file, 'w') as fil:
         json.dump(games_list, fil, cls=LichessEncoder)
+
 
 if __name__ == "__main__":
     main()
