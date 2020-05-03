@@ -16,7 +16,7 @@ We use conducto to build our pipelines. The first stage of the pipeline pulls
 all the game data. Subsequent stages just analyize the data, so they run in
 parallel. All stages print their results to stdout.
 
-To run using canned Lichess data from S3:
+To actually run the pipeline:
 
 ```
 make pipeline
