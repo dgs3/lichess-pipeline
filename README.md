@@ -14,9 +14,10 @@ make pipeline
 
 If successful, a browser window should pop up with the conducto UI and your
 pipeline ready to execute. To execute your pipeline, press the "Play" button on
-the top left.. Expand the parallel `analyze-games` pipeline to see the actual
+the top left. Expand the parallel `analyze-games` pipeline to see the actual
 game analysis.
 
+### Run Against Lichess API
 
 Alternatively you can run pulling the newest data directly from lichess:
 
