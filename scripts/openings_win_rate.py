@@ -1,9 +1,18 @@
 #!/usr/bin/env python3.7
-"""Module to determine the win/loss rate of certain openings."""
+"""Module to determine the win/loss rate of certain openings.
 
-import argparse
+This script prints the data in the format of:
+
+$OPENING_NAME:
+    Wins:
+    Losses:
+    Draws:
+...
+"""
+
 import enum
-import json
+
+import util
 
 
 class Result(enum.Enum):
@@ -17,32 +26,27 @@ class Result(enum.Enum):
     OUT_OF_TIME = 'outoftime'
 
 
-def parse_args() -> argparse.Namespace:
-    """Parse some args."""
-    parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--input-file',
-                        help='Games file to analyze.',
-                        required=True)
-    parser.add_argument('--player-name',
-                        help='Lichess player name to analyze.',
-                        required=True)
-    return parser.parse_args()
-
-
-def get_game_data(game_dict, player) -> dict:
+def get_game_data(game_dict, player) -> tuple:
     """Parses some game data from a lichess game dict."""
-    opening_name = game_dict['opening']['name']
+    opening_name = util.get_opening_name(game_dict)
     if game_dict['status'] == Result.DRAW.value:
         return (opening_name, Result.DRAW)
-    # The winner is the color that won (i.e. white, black)
-    winner = game_dict['winner']
-    winner_name = game_dict['players'][winner]['user']['name']
+    winner_name = util.get_game_winner(game_dict)
     return (opening_name, Result.WIN if winner_name == player else Result.LOSS)
 
 
-def game_has_opening_data(game_dict) -> bool:
-    """Returns True if this game has opening data. False otherwise."""
-    return 'opening' in game_dict
+def opening_table_to_str(opening_table) -> str:
+    """Format an opening table to markdown."""
+    to_return = ""
+    for opening_name, data in opening_table.items():
+        to_add = [
+            f'{opening_name}:\n',
+            f'    Wins: {data[Result.WIN]}\n',
+            f'    Losses: {data[Result.LOSS]}\n',
+            f'    Draws: {data[Result.DRAW]}\n',
+        ]
+        to_return += ' '.join(to_add)
+    return to_return
 
 
 def game_is_timeout(game_dict) -> bool:
@@ -56,18 +60,13 @@ def game_is_timeout(game_dict) -> bool:
     ]
 
 
-def opening_table_to_markdown(game_data) -> str:
-    """Format an opening table to markdown."""
-    to_return = ""
-    for opening_name, data in game_data.items():
-        to_add = [f'{opening_name}:',
-                  f'Wins: {data[Result.WIN]}',
-                  f'Losses: {data[Result.LOSS]}',
-                  f'Draws: {data[Result.DRAW]}',
-        ]
-        to_return += ' '.join(to_add)
-        to_return += '\n'
-    return to_return
+def ignore_game(game_dict) -> bool:
+    """Returns True if we should just ignore this game data. False otherwise.
+
+    We ignore some games if they have insufficient date.
+    """
+    return not util.game_has_opening_data(game_dict) or game_is_timeout(
+        game_dict)
 
 
 def analyze_games(game_data, player) -> str:
@@ -80,13 +79,13 @@ def analyze_games(game_data, player) -> str:
     # A table of openings. We fill it out to look like:
     # {$OPENING_NAME: {'win: 0, 'loss': 0, 'draw': 0}, ...}
     opening_table = {}
-    for game in game_data:
+    for game_dict in game_data:
         # Skip any games that don't have opening data.
         # I'm not sure why some games wouldn't have opening data. It's possible
         # lichess hasn't gotten around to analyzing them yet.
-        if not game_has_opening_data(game) or game_is_timeout(game):
+        if ignore_game(game_dict):
             continue
-        (opening_name, result) = get_game_data(game, player)
+        (opening_name, result) = get_game_data(game_dict, player)
         if opening_name not in opening_table:
             opening_table[opening_name] = {
                 Result.WIN: 0,
@@ -94,14 +93,13 @@ def analyze_games(game_data, player) -> str:
                 Result.DRAW: 0
             }
         opening_table[opening_name][result] += 1
-    return opening_table_to_markdown(opening_table)
+    return opening_table_to_str(opening_table)
 
 
 def main():
     """Main method."""
-    args = parse_args()
-    with open(args.input_file) as fil:
-        game_data = json.load(fil)
+    args = util.parse_processor_args()
+    game_data = util.read_game_data(args.input_file)
     results = analyze_games(game_data, args.player_name)
     print(results)
 
