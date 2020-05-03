@@ -6,7 +6,6 @@ Script used to download lichess game data.
 import argparse
 import datetime
 import json
-import os
 
 import berserk
 
@@ -52,19 +51,10 @@ class LichessEncoder(json.JSONEncoder):
         return obj.isoformat()
 
 
-def get_token_from_env() -> str:
-    """Gets a lichess token from the env."""
-    return os.environ['LICHESS_TOKEN']
-
-
 def main():
     """Main method."""
     args = parse_args()
-    token = args.token
-    # Having the token in the env supports conducto a bit better.
-    if args.token is None:
-        token = get_token_from_env()
-    session = berserk.TokenSession(token)
+    session = berserk.TokenSession(args.token)
     client = berserk.Client(session=session)
     games = client.games.export_by_player(args.player_name)
     full_game_data = []

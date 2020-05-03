@@ -1,9 +1,9 @@
 #!/usr/bin/env python3.7
 """
-Script used to determine if I was able to equalize or win out of the opening
-successfully.
+Script used to determine if I was able to equalize, win or lose out of the
+opening.
 
-I say I equalized if the eval is -1 <= EVAL <= 1.
+I say I equalized if the eval is -100 <= EVAL <= 100.
 
 This script prints the data in the format of:
 
@@ -109,8 +109,8 @@ def equalize_table_to_str(equalize_table) -> str:
 
 
 def analyze_games(game_data, player) -> str:
-    """Analyze a series of games, determining if I was able to equalize,
-    win, or lose out of the opening.
+    """Analyze a series of games, determining if I was able to win, lose, or
+    equalize out of the opening.
     """
     equalize_table = {}
     for game_dict in game_data:
@@ -129,7 +129,7 @@ def analyze_games(game_data, player) -> str:
 
 def main():
     """Main method."""
-    args = util.parse_processor_args()
+    args = util.parse_processor_args(__doc__)
     game_data = util.read_game_data(args.input_file)
     results = analyze_games(game_data, args.player_name)
     print(results)

@@ -4,9 +4,9 @@ import argparse
 import json
 
 
-def parse_processor_args() -> argparse.Namespace:
+def parse_processor_args(description) -> argparse.Namespace:
     """Common args for game data processor scripts."""
-    parser = argparse.ArgumentParser(description=__doc__)
+    parser = argparse.ArgumentParser(description=description)
     parser.add_argument('--input-file',
                         help='Games file to analyze.',
                         required=True)
@@ -32,9 +32,9 @@ def game_has_opening_data(game_dict) -> bool:
 
 def get_game_winner(game_dict) -> str:
     """Returns the name of the game winner."""
-    # The winner is the color that won (i.e. white, black)
-    winner = game_dict['winner']
-    return game_dict['players'][winner]['user']['name']
+    # Here the value of winner is the color that won (i.e. white, black)
+    winner_color = game_dict['winner']
+    return game_dict['players'][winner_color]['user']['name']
 
 
 def get_opening_name(game_dict) -> str:

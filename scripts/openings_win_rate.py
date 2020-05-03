@@ -32,7 +32,8 @@ def get_game_data(game_dict, player) -> tuple:
     if game_dict['status'] == Result.DRAW.value:
         return (opening_name, Result.DRAW)
     winner_name = util.get_game_winner(game_dict)
-    return (opening_name, Result.WIN if winner_name == player else Result.LOSS)
+    result = Result.WIN if winner_name == player else Result.LOSS
+    return (opening_name, result)
 
 
 def opening_table_to_str(opening_table) -> str:
@@ -63,7 +64,7 @@ def game_is_timeout(game_dict) -> bool:
 def ignore_game(game_dict) -> bool:
     """Returns True if we should just ignore this game data. False otherwise.
 
-    We ignore some games if they have insufficient date.
+    We ignore some games if they have insufficient data.
     """
     return not util.game_has_opening_data(game_dict) or game_is_timeout(
         game_dict)
@@ -98,7 +99,7 @@ def analyze_games(game_data, player) -> str:
 
 def main():
     """Main method."""
-    args = util.parse_processor_args()
+    args = util.parse_processor_args(__doc__)
     game_data = util.read_game_data(args.input_file)
     results = analyze_games(game_data, args.player_name)
     print(results)
