@@ -45,13 +45,13 @@ def get_opening_eval(game_data) -> int:
     if len(analysis) < limit:
         final_eval = analysis[-1]
     else:
-        # Use -1 because the first move is move 0
+        # Use `limit-1` because the first move is move 0
         final_eval = analysis[limit - 1]
     return final_eval['eval']
 
 
 def get_player_color(game_data, player) -> Color:
-    """Gets the color `player` was."""
+    """Gets the color `player` played as."""
     if game_data['players'][Color.WHITE.value]['user']['name'] == player:
         return Color.WHITE
     return Color.BLACK
@@ -109,8 +109,8 @@ def equalize_table_to_str(equalize_table) -> str:
 
 
 def analyze_games(game_data, player) -> str:
-    """Analyze a series of games, determining if I was able to equalize
-    or win out of the opening.
+    """Analyze a series of games, determining if I was able to equalize,
+    win, or lose out of the opening.
     """
     equalize_table = {}
     for game_dict in game_data:
