@@ -8,7 +8,7 @@ import conducto
 GAMES_DATA_FILE = 'games.json'
 PLAYER_NAME = 'dgs3'
 
-PIPELINE_IMG = conducto.Image("python:3.7", copy_dir=".")
+PIPELINE_IMG = conducto.Image(dockerfile='Dockerfile')
 
 
 def get_lichess_token() -> str:
