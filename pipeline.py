@@ -1,12 +1,14 @@
 #!/usr/bin/env python3.7
 """
-A pipeline to analyze Dave's lichess games.
+A pipeline to analyze Dave Sayles' lichess games.
 """
 
 import conducto
 
 GAMES_DATA_FILE = 'games.json'
 PLAYER_NAME = 'dgs3'
+
+VENV_PYTHON = 'venv/bin/python3.7'
 
 PIPELINE_IMG = conducto.Image(dockerfile='Dockerfile')
 
@@ -25,6 +27,7 @@ def download_games_from_s3() -> conducto.Exec:
     args = [
         f'curl --output - {games_url}',
         '|',
+        # We assume `zcat` is readily available in PIPELINE_IMG.
         'zcat',
         '>',
         GAMES_DATA_FILE,
@@ -32,11 +35,12 @@ def download_games_from_s3() -> conducto.Exec:
     cmd = ' '.join(args)
     return conducto.Exec(cmd)
 
+
 def download_games_from_lichess() -> conducto.Exec:
     """Executor to download games directly from lichess."""
     token = get_lichess_token()
     args = [
-        'venv/bin/python3.7',
+        VENV_PYTHON,
         'scripts/download_lichess_data.py',
         f'--player-name={PLAYER_NAME}',
         f'--output-file={GAMES_DATA_FILE}',
@@ -49,7 +53,7 @@ def download_games_from_lichess() -> conducto.Exec:
 def openings_win_loss_rate() -> conducto.Exec:
     """Executor to analyze openings from lichess data."""
     args = [
-        'venv/bin/python3.7',
+        VENV_PYTHON,
         'scripts/openings_win_rate.py',
         f'--input-file={GAMES_DATA_FILE}',
         f'--player-name={PLAYER_NAME}',
@@ -61,7 +65,7 @@ def openings_win_loss_rate() -> conducto.Exec:
 def opening_equalized() -> conducto.Exec:
     """Executor to analyze if any player has an edge during the opening."""
     args = [
-        'venv/bin/python3.7',
+        VENV_PYTHON,
         'scripts/opening_equalized.py',
         f'--input-file={GAMES_DATA_FILE}',
         f'--player-name={PLAYER_NAME}',
@@ -71,17 +75,20 @@ def opening_equalized() -> conducto.Exec:
 
 
 def add_analyzers():
-	"""Adds some analyzers to a pipeline."""
-	with conducto.Parallel(name='analyze-games') as analyze_pipeline:
-		analyze_pipeline[
-			'openings-win-loss-rate'] = openings_win_loss_rate()
-		analyze_pipeline['opening-equalized'] = opening_equalized()
+    """Adds some analyzers to a pipeline.
+
+    Expected to be used in the `with` context of a parent pipeline.
+    """
+    with conducto.Parallel(name='analyze-games') as analyze_pipeline:
+        analyze_pipeline['openings-win-loss-rate'] = openings_win_loss_rate()
+        analyze_pipeline['opening-equalized'] = opening_equalized()
+
 
 def lichess_canned() -> conducto.Exec:
     """Executor for the lichess pipeline.
 
     This'll pull down a zipfile of canned lichess data, so no api token is
-	required.
+    required.
     """
     with conducto.Serial(doc=conducto.util.magic_doc(),
                          image=PIPELINE_IMG) as pipeline:
@@ -102,6 +109,7 @@ def lichess_fresh() -> conducto.Exec:
         pipeline['download-from-lichess'] = download_games_from_lichess()
         add_analyzers()
     return pipeline
+
 
 if __name__ == "__main__":
     conducto.main(default=lichess_canned)
