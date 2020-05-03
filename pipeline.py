@@ -19,8 +19,21 @@ def get_lichess_token() -> str:
     return secrets['LICHESS_TOKEN']
 
 
-def download_games() -> conducto.Exec:
-    """Executor to Download lichess games."""
+def download_games_from_s3() -> conducto.Exec:
+    """Executor to download canned games from s3."""
+    games_url = 'https://sayles-lichess-games.s3.amazonaws.com/games.zip'
+    args = [
+        f'curl --output - {games_url}',
+        '|',
+        'zcat',
+        '>',
+        GAMES_DATA_FILE,
+    ]
+    cmd = ' '.join(args)
+    return conducto.Exec(cmd)
+
+def download_games_from_lichess() -> conducto.Exec:
+    """Executor to download games directly from lichess."""
     token = get_lichess_token()
     args = [
         'venv/bin/python3.7',
@@ -57,20 +70,38 @@ def opening_equalized() -> conducto.Exec:
     return conducto.Exec(cmd)
 
 
-def lichess() -> conducto.Exec:
+def add_analyzers():
+	"""Adds some analyzers to a pipeline."""
+	with conducto.Parallel(name='analyze-games') as analyze_pipeline:
+		analyze_pipeline[
+			'openings-win-loss-rate'] = openings_win_loss_rate()
+		analyze_pipeline['opening-equalized'] = opening_equalized()
+
+def lichess_canned() -> conducto.Exec:
     """Executor for the lichess pipeline.
 
-    This pipeline pulls all of my lichess games and sees how I can improve.
+    This'll pull down a zipfile of canned lichess data, so no api token is
+	required.
     """
     with conducto.Serial(doc=conducto.util.magic_doc(),
                          image=PIPELINE_IMG) as pipeline:
-        pipeline['download-from-lichess'] = download_games()
-        with conducto.Parallel(name='analyze-games') as analyze_pipeline:
-            analyze_pipeline[
-                'openings-win-loss-rate'] = openings_win_loss_rate()
-            analyze_pipeline['opening-equalized'] = opening_equalized()
+        pipeline['download-from-s3'] = download_games_from_s3()
+        add_analyzers()
     return pipeline
 
 
+def lichess_fresh() -> conducto.Exec:
+    """Executor for the lichess pipeline.
+
+    This'll pull down data fresh from lichess, so a conducto secret called
+    LICHESS_TOKEN is necessary. The token can be generated at:
+    `https://lichess.org/account/oauth/token`.
+    """
+    with conducto.Serial(doc=conducto.util.magic_doc(),
+                         image=PIPELINE_IMG) as pipeline:
+        pipeline['download-from-lichess'] = download_games_from_lichess()
+        add_analyzers()
+    return pipeline
+
 if __name__ == "__main__":
-    conducto.main(default=lichess)
+    conducto.main(default=lichess_canned)
