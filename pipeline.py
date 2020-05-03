@@ -45,6 +45,18 @@ def openings_win_loss_rate() -> conducto.Exec:
     return conducto.Exec(cmd)
 
 
+def opening_equalized() -> conducto.Exec:
+    """Executor to analyze if any player has an edge during the opening."""
+    args = [
+        'venv/bin/python3.7',
+        'scripts/opening_equalized.py',
+        f'--input-file={GAMES_DATA_FILE}',
+        f'--player-name={PLAYER_NAME}',
+    ]
+    cmd = ' '.join(args)
+    return conducto.Exec(cmd)
+
+
 def lichess() -> conducto.Exec:
     """Executor for the lichess pipeline.
 
@@ -56,6 +68,7 @@ def lichess() -> conducto.Exec:
         with conducto.Parallel(name='analyze-games') as analyze_pipeline:
             analyze_pipeline[
                 'openings-win-loss-rate'] = openings_win_loss_rate()
+            analyze_pipeline['opening-equalized'] = opening_equalized()
     return pipeline
 
 
