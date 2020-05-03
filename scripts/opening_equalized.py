@@ -45,7 +45,8 @@ def get_opening_eval(game_data) -> int:
     if len(analysis) < limit:
         final_eval = analysis[-1]
     else:
-        final_eval = analysis[limit]
+        # Use -1 because the first move is move 0
+        final_eval = analysis[limit - 1]
     return final_eval['eval']
 
 
@@ -89,7 +90,7 @@ def ignore_game(game_dict) -> bool:
 
     We ignore some games if they have insufficient date.
     """
-    return not util.game_has_opening_data(game_dict) or game_has_eval_data(
+    return not util.game_has_opening_data(game_dict) or not game_has_eval_data(
         game_dict)
 
 
