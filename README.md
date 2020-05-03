@@ -1,6 +1,16 @@
 # Chess Conducto Pipeline
 A pipeline that'll cobble together some data about my lichess games.
 
+## Requirements
+Here are the things you need before running:
+
+* Some modern linux installation (Ubuntu 18.04 is nice).
+* python3.7 in your $PATH.
+* Docker accessible by your current user (`docker run --rm hello-world`
+  should run successfully).
+* A conducto account. Go here to create one if you haven't yet:
+  `https://conducto.com/app/register`.
+
 ## How To Run
 We use conducto to build our pipelines. The first stage of the pipeline pulls
 all the game data. Subsequent stages just analyize the data, so they run in
@@ -12,10 +22,11 @@ To run using canned Lichess data from S3:
 make pipeline
 ```
 
-If successful, a browser window should pop up with the conducto UI and your
-pipeline ready to execute. To execute your pipeline, press the "Play" button on
-the top left. Expand the parallel `analyze-games` pipeline to see the actual
-game analysis.
+If you've never created a pipeline before, you'll be prompted to enter your
+conducto creds. If everything is successful, a browser window should pop up
+with the conducto UI and your pipeline ready to execute. To execute your
+pipeline, press the "Play" button on the top left. Expand the parallel
+`analyze-games` pipeline to see the actual game analysis.
 
 ### Run Against Lichess API
 
