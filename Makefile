@@ -12,4 +12,4 @@ format:
 	${VENV_YAPF} -i *.py scripts/*.py
 
 lint:
-	${VENV_LINT} -rn *.py scripts/*.py
+	${VENV_LINT} --rcfile=pylintrc *.py scripts/*.py
